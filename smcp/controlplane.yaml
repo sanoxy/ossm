@@ -1,0 +1,214 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: demomesh
+  namespace: istio-system
+spec:
+  version: v2.1
+  general:
+    logging:
+      componentLevels:
+        {}  
+      logAsJSON: true
+    validationMessages: true
+  security:
+    dataPlane:
+      mtls: true
+    controlPlane:
+      mtls: true
+  global:
+    mtls: true #MTLS enable by default
+  gateways:
+    enabled: true
+    openshiftRoute:
+      enabled: false
+    ingress:
+      enabled: true
+      ingress: true
+      sds:
+        enabled: false
+        #Runtime configuration for sds sidecar
+        runtime:
+          {}
+      routerMode: "standard" #sni-dnat sni passthrough, use it if you dont want tls termination
+      volumes:
+        [] #Volumes is used to configure additional Secret and ConfigMap volumes that should be mounted for the gateway's pod.
+      runtime:
+        #Deployment specific overrides
+        deployment:
+          replicas: 3
+          autoScaling:
+            maxReplicas: 10
+            minReplicas: 3
+            targetCPUUtilizationPercentage: 75
+          strategy:
+            {} #The deployment strategy to use to replace existing pods with new ones.
+        pod:
+          {} #Pod specific overrides
+        container:
+          {} #Container specific overrides
+      service:
+        {} #keep it default, configure this for specific production requirements
+    egress:
+      enabled: false
+      routerMode: "standard"
+      volumes:
+        [] #Volumes is used to configure additional Secret and ConfigMap volumes that should be mounted for the gateway's pod. 
+      runtime:
+        deployment:
+          replicas: 3
+          autoScaling:
+            maxReplicas: 10
+            minReplicas: 3
+            targetCPUUtilizationPercentage: 75
+          strategy:
+            {} #The deployment strategy to use to replace existing pods with new ones.
+        pod:
+          {} #Pod specific overrides
+        container:
+          {} #Container specific overrides
+
+  tracing:
+    type: Jaeger #do we support other than jaeger?
+    sampling: 10000 #setting it to max
+  
+  telemetry:
+    type: Istiod
+        
+  addons:
+    jaeger:
+      name: jaeger
+      install:
+        ingress:
+          enabled: true
+          metadata:
+            annotations:
+              {}
+            labels:
+              {}
+        storage:
+          type: elasticsearch
+          elasticsearch:
+            indexCleaner:
+              enabled: true
+              numberOfDays: 7
+              schedule: "0 * * * * *"
+              extraEnv:
+              - name: ES_TLS_ENABLED
+                value: "true"
+              - name: ES_TLS_SKIP_HOST_VERIFY
+                value: "true"
+              - name: ROLLOVER
+                value: 'true'
+            nodeCount: 3
+            redundancyPolicy: "SingleRedundancy"
+            storage:
+              storageClassName: "distrtraces" 
+              size: 500Gb
+
+    grafana:
+      enabled: true
+      install:
+        config:
+          env:
+            {}
+          envSecrets:
+            {}
+        persistence:
+          enabled: true
+          accessMode: "ReadWriteOnce"
+          storageClassName: ""
+          capacity:
+            requests:
+              storage: 5Gi
+            limits:
+              {}
+        service:
+          ingress:
+            contextPath: /dashboards/grafana
+            tls:
+              termination: reencrypt
+        security:
+          enabled: true
+
+    kiali:
+      name: kiali
+      enabled: true
+      install:
+        dashboard:
+          enableGrafana: true
+          enablePromethues: true
+          enableTracing: true
+          viewOnly: false
+        deployment:
+          affinity:
+            {}
+          nodeSelector:
+            {}
+          resources:
+            {}
+          tolerations: 
+            []
+        service:
+          ingress:
+            enabled: true
+            contextPath: "/dashboards/kiali"
+            hosts:
+              []
+            metadata:
+              annotations:
+                {}
+              labels:
+                {}
+            tls:
+              {}
+          metadata:
+            annotations:
+              {}
+            labels:
+              {}
+    
+    prometheus:
+      {}
+  
+  runtime:
+    components:
+      pilot:
+        deployment:
+          replicas: 2
+        pod:
+          affinity: {}
+        container:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+      galley:
+        deployment:
+          replicas: 2
+        pod:
+          affinity: {}
+        container:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+      security:
+        deployment:
+          replicas: 2
+        pod:
+          affinity: {}
+        container:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
