@@ -26,7 +26,7 @@ spec:
       enabled: true
       ingress: true
       sds:
-        enabled: false
+        enabled: true
         #Runtime configuration for sds sidecar
         runtime:
           {}
