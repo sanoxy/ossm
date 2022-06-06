@@ -13,11 +13,11 @@ spec:
     validationMessages: true
   security:
     dataPlane:
-      mtls: true
+      mtls: false
     controlPlane:
-      mtls: true
+      mtls: false
   global:
-    mtls: true #MTLS enable by default
+    mtls: false #MTLS enable by default
   gateways:
     enabled: true
     openshiftRoute:
@@ -87,24 +87,13 @@ spec:
             labels:
               {}
         storage:
-          type: elasticsearch
+          type: Elasticsearch
           elasticsearch:
-            indexCleaner:
-              enabled: true
-              numberOfDays: 7
-              schedule: "0 * * * * *"
-              extraEnv:
-              - name: ES_TLS_ENABLED
-                value: "true"
-              - name: ES_TLS_SKIP_HOST_VERIFY
-                value: "true"
-              - name: ROLLOVER
-                value: 'true'
-            nodeCount: 3
+            nodeCount: 1
             redundancyPolicy: "SingleRedundancy"
             storage:
-              storageClassName: "distrtraces" 
-              size: 500Gb
+              storageClassName: "gp2" 
+              size: 500Gi
 
     grafana:
       enabled: true
@@ -175,7 +164,7 @@ spec:
     components:
       pilot:
         deployment:
-          replicas: 2
+          replicas: 1
         pod:
           affinity: {}
         container:
@@ -188,7 +177,7 @@ spec:
               memory: 128Mi
       galley:
         deployment:
-          replicas: 2
+          replicas: 1
         pod:
           affinity: {}
         container:
@@ -201,7 +190,7 @@ spec:
               memory: 128Mi
       security:
         deployment:
-          replicas: 2
+          replicas: 1
         pod:
           affinity: {}
         container:
@@ -212,3 +201,4 @@ spec:
             limits:
               cpu: 500m
               memory: 128Mi
+        

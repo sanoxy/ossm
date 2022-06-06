@@ -6,7 +6,7 @@ spec:
   gateways:
   - istio-system/default
   hosts:
-  - secure-istio-system.apps.mesh1.sandbox1596.opentlc.com
+  - secure-istio-system.apps.mesh1.sandbox629.opentlc.com
   http:
   - match:
     - uri:
