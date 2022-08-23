@@ -89,7 +89,8 @@ spec:
         storage:
           type: Elasticsearch
           elasticsearch:
-            nodeCount: 1
+            indexCleaner: {}
+            nodeCount: 3
             redundancyPolicy: "SingleRedundancy"
             storage:
               storageClassName: "gp2" 
@@ -158,7 +159,7 @@ spec:
               {}
     
     prometheus:
-      {}
+      enabled: true
   
   runtime:
     components:

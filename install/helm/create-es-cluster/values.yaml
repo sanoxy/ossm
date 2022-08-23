@@ -1,0 +1,5 @@
+instanceName: "distributedtraces"
+namespace: "tools"
+nodeCount: 3
+redundancyPolicy: "FullRedundancy"
+
